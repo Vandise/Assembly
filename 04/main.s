@@ -3,27 +3,28 @@
 
 .section    .data
 
-record:
-  .ascii  "Ben Anderson\0"
-  .rept   15
-  .byte   0
-  .endr
+.section    .bss
+.lcomm  record_buffer,  15
 
 .section    .text
 
 file_name:
   .ascii  "test.dat\0"
 
+input_file:
+  .ascii "testdata.dat\0"
+
 .equ  FILE_DESCRIPTOR,  -4
+.equ  INPUT_FILE_DESC,  -8
 .equ  RECORD_SIZE,      15
 
 .globl    _start
 
 _start:
   movl    %esp,   %ebp
-  subl    $4,     %esp    # file descriptor
+  subl    $8,     %esp    # file descriptor
 
-  # Open the file
+  # Open the write file
 
   pushl    $0666
   pushl    $0101
@@ -34,15 +35,50 @@ _start:
 
   movl    %eax,         FILE_DESCRIPTOR(%ebp) # Save returned file descriptor
 
-  pushl   FILE_DESCRIPTOR(%ebp)
-  pushl   $record
+  # Open input file
 
-  call  write_string
+  pushl   $0666
+  pushl   $0
+  pushl   $input_file
+
+  call    open_file
+  addl    $12,    %esp
+
+  movl    %eax,         INPUT_FILE_DESC(%ebp)
+
+  # Read the input buffer
+
+read_file_loop:
+  pushl   $RECORD_SIZE
+  pushl   $record_buffer
+  pushl   INPUT_FILE_DESC(%ebp)
+
+  call    read_buffer
+  addl    $12,    %esp
+
+  cmpl    $RECORD_SIZE,   %eax
+  jne     end_read_loop
+
+  # write the input string
+
+  pushl   INPUT_FILE_DESC(%ebp)
+  pushl   $record_buffer
+
+  call  write_buffer
   addl    $8,   %esp
 
-  # Close the file
+  jmp   read_file_loop
+
+end_read_loop:
+
+  # Close the files
 
   pushl   FILE_DESCRIPTOR(%ebp)
+
+  call    close_file
+  addl    $4,   %esp
+
+  pushl   INPUT_FILE_DESC(%ebp)
 
   call    close_file
   addl    $4,   %esp
@@ -60,8 +96,8 @@ _start:
 .equ  WRITE_BUFFER,      8
 .equ  FILE_DES,          12
 
-.type   write_string, @function
-write_string:
+.type   write_buffer, @function
+write_buffer:
   pushl   %ebp
   movl    %esp,   %ebp
   pushl   %ebx

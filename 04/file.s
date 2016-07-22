@@ -62,3 +62,37 @@ close_file:
   movl    %ebp,   %esp
   popl    %ebp
   ret
+
+.type   read_buffer,    @function
+
+.equ _READ_BUFFER_FILE, 8
+.equ _READ_BUFFER, 12
+.equ _READ_BUFFER_SIZE, 16
+
+# Function read_buffer:
+##  Reads content into a buffer
+##  Param 1: File Descriptor
+##  Param 2: Buffer
+##  Param 3: Buffer Size
+
+read_buffer:
+
+  # C function calling convention
+
+  pushl   %ebp
+  movl    %esp,   %ebp
+  pushl   %ebx
+
+  # Read contents into the buffer
+
+  movl    $SYS_READ,                %eax
+  movl    _READ_BUFFER_FILE(%ebp),  %ebx
+  movl    _READ_BUFFER(%ebp),       %ecx
+  movl    _READ_BUFFER_SIZE(%ebp),  %edx
+
+  int     $SYS_CALL
+
+  popl    %ebx
+  movl    %ebp,   %esp
+  popl    %ebp
+  ret
