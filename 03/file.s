@@ -76,6 +76,15 @@ open_fd_out:
 store_fd_out:
   movl    %eax, ST_FD_OUT(%ebp)   # Store out file descriptor
 
+
+#
+# eax:  read command
+# ebx:  file descriptor
+# ecx:  buffer to write into
+# edx:  size of the buffer
+# returns:
+#   eax: bytes read (0 for EOF)
+
 read_loop_begin:
   movl    $SYS_READ,    %eax      # Read in a block from the input file
   movl    ST_FD_IN(%ebp),   %ebx  # Get the input file descriptor
