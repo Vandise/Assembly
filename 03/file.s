@@ -1,3 +1,16 @@
+#
+# SYS CALL Parameters for files:
+#
+# %eax contains the system call number as usual - 5 in this case.
+# %ebx contains a pointer to a string that is the name of the file to open. The
+#   string must be terminated with the null character.
+# %ecx contains the options used for opening the file. These tell Linux how to open the file. 
+#    They can indicate things such as open for reading, open for writing, open for reading and writing, 
+#    create if it doesn’t exist, delete the file if it already exists, etc. 
+# %edx contains the permissions that are used to open the file. This is used in case the 
+#   file has to be created first, so Linux knows what permissions to create the file with. 
+#   These are expressed in octal, just like regular UNIX permissions.
+
 .section    .data
 
 ### Constants ###
