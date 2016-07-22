@@ -34,3 +34,31 @@ open_file:
   movl    %ebp,   %esp
   popl    %ebp
   ret
+
+.type   close_file,    @function
+
+# Function close_file:
+##  Closes a file descriptor, returns response
+##  Param 1: File Descriptor
+
+.equ  _CLOSE_FILE_DESC,  8
+
+close_file:
+
+  # C function calling convention
+
+  pushl   %ebp
+  movl    %esp,   %ebp
+  pushl   %ebx
+
+  # Close the file descriptor
+
+  movl    $SYS_CLOSE,             %eax
+  movl    _CLOSE_FILE_DESC(%ebp), %ebx
+  int     $SYS_CALL
+
+  # Restore stack pointer
+
+  movl    %ebp,   %esp
+  popl    %ebp
+  ret
