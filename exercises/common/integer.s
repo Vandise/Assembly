@@ -55,7 +55,7 @@ i_to_s:
 
   pushl  %ebp
   movl   %esp,  %ebp
-  
+
   movl    _ITOS_BUFFER(%ebp), %edi
   movl    _ITOS_NUM(%ebp),    %eax
   
@@ -66,7 +66,7 @@ loop_digits:                  # Convert each digit to its ascii counterpart
   addl    $48, %edx
   movb    %dl, (%edi)
   incl    %edi
-  cmpl    $4, %eax
+  cmpl    $4, %eax            # TODO: We'll know the length based off of input / param
   jg      loop_digits
 
 reverse_bytes:
