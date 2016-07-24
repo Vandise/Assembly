@@ -1,87 +1,58 @@
 .include "string.s"
 
-.section  .data
-  
-number:
-  .long 6000
+#
+# Converts an int to a string
+#   Param 1 - Int Value
+#   Param 2 - Buffer to write the string to
+#
+.equ ST_VALUE, 8
+.equ ST_BUFFER, 12
 
-buffer:
-  .space 10
+.type int_to_s, @function
+int_to_s:
 
-.equ SYS_EXIT,    1
-.equ SYS_WRITE,   4
-.equ STDOUT,      1
-.equ LEN,         11
+  pushl   %ebp
+  movl    %esp,   %ebp
 
-.section  .text
+  movl    $0,   %ecx
+  movl    ST_VALUE(%ebp), %eax
+  movl    $10,  %edi
 
-.global _start
-.text
+conversion_loop:
 
-_start:
+  movl    $0,   %edx
+  divl    %edi
 
-  movl  %esp, %ebp
+  addl    $'0', %edx
+  pushl   %edx
+  incl    %ecx
 
-  pushl   $buffer
-  pushl   number
-  call    i_to_s
+  cmpl    $0,   %eax
+  je      end_conversion_loop
 
-  pushl $buffer
-  call  str_len
-  addl  $8,   %esp
+  jmp     conversion_loop
 
-  movl    $STDOUT, %ebx
-  movl    $buffer, %ecx
-  movl    %eax, %edx
-  movl    $SYS_WRITE, %eax
-  int     $0x80
+end_conversion_loop:
 
-  movl    $SYS_EXIT, %eax
-  xorl    %ebx, %ebx
-  int     $0x80
+  movl  ST_BUFFER(%ebp),    %edx
 
+copy_reversing_loop:
 
+  popl  %eax
+  movb  %al,  (%edx)
 
-# Converts an integer to a string
-#   Param 1 - An integer adress
-.type i_to_s, @function
+  decl  %ecx
+  incl  %edx
 
-.equ  _ITOS_NUM,     8
-.equ  _ITOS_BUFFER,  12
+  cmpl  $0, %ecx
+  je    end_copy_reversing_loop
 
-decimal:  .long 10
+  jmp   copy_reversing_loop
 
-i_to_s:
+end_copy_reversing_loop:
 
-  pushl  %ebp
-  movl   %esp,  %ebp
+  movb  $0,   (%edx)
 
-  movl    _ITOS_BUFFER(%ebp), %edi
-  movl    _ITOS_NUM(%ebp),    %eax
-  
-loop_digits:                  # Convert each digit to its ascii counterpart
-
-  xorl    %edx, %edx
-  divl    decimal
-  addl    $48, %edx
-  movb    %dl, (%edi)
-  incl    %edi
-  cmpl    $4, %eax            # TODO: We'll know the length based off of input / param
-  jg      loop_digits
-
-reverse_bytes:
-
-  pushl  _ITOS_BUFFER(%ebp)
-  call  str_len
-  addl  $8,   %esp
-
-  pushl   %eax
-  pushl   _ITOS_BUFFER(%ebp)
-  call    str_reverse
-  addl    $8,   %esp
-
-end_i_to_s:
-
-  movl  %ebp, %esp
+  movl  %ebp,   %esp
   popl  %ebp
   ret

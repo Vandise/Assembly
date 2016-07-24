@@ -53,22 +53,22 @@ str_len:
   pushl  %ebp
   movl   %esp,  %ebp
 
-  xorl    %edi,         %edi
-  movl   _STRING(%ebp), %esi
+  movl  $0,             %ecx
+  movl  _STRING(%ebp),  %edx
 
-str_len_loop:
+count_chars:
 
-  lodsb                 # Read byte of string and increment position
-  cmpb    $0,   %al     # If read byte = 0, end of string
-  jz      end_str_len
-  incl    %edi
-  jmp     str_len_loop
+  movb  (%edx), %al
+  cmpb  $0,     %al
+  je    count_chars_end
 
-end_str_len:
+  incl  %ecx
+  incl  %edx
+  jmp   count_chars
 
-  #decl  %edi
-  movl  %edi, %eax      # return the character count
-  movl  %ebp, %esp
+count_chars_end:
+
+  movl  %ecx,   %eax
   popl  %ebp
   ret
 
