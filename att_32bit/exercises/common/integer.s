@@ -1,4 +1,3 @@
-.include "string.s"
 
 #
 # Converts an int to a string
