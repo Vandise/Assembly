@@ -28,23 +28,9 @@ _start:
   movl  %esp,   %ebp
   subl  $4,     %esp
 
-  #
-  # TODO: Make a function for the user-input prompting
-  #
-
-  pushl $quote_prompt           # Get the quote prompt string size
-  call  str_len
-  addl  $4,   %esp
-
-  pushl   %eax                  # Buffer Size
-  pushl   $quote_prompt
-  call    writeln
-  addl    $8,   %esp
-
-  pushl   $150                   # Get user quote
-  pushl   $input_buffer
-  call    readln
-  addl    $8,   %esp
+  pushl $quote_prompt
+  pushl $input_buffer
+  call user_prompt
 
   #subl    $1,     %eax                # Exclude the null value in count
   movl    %eax,   _CHAR_COUNT(%ebp)    # Input character length
@@ -65,24 +51,9 @@ _start:
   cld
   rep stosb
 
-  #
-  # See above TODO
-  #
-
-  pushl $author_prompt                 # Get the author prompt string size
-  call  str_len
-  addl  $4,   %esp
-
-  pushl   %eax                         # Display the prompt
-  pushl   $author_prompt
-  call    writeln
-  addl    $8,   %esp
-
-  pushl   $150                         # Get the author
-  pushl   $input_buffer
-  call    readln
-  addl    $8,   %esp
-
+  pushl $author_prompt
+  pushl $input_buffer
+  call user_prompt
 
   # TODO: Finish building the quote string
 
@@ -90,3 +61,34 @@ _start:
   movl $SYS_EXIT,  %eax         # Exit
   movl $0,         %ebx
   int  $SYS_CALL
+
+#
+# User Prompt
+#   ret: bytes read in
+#
+.equ _PROMPT_BUFFER, 8
+.equ _PROMPT_TEXT, 12
+
+.type user_prompt, @function
+
+user_prompt:
+  pushl   %ebp
+  movl    %esp,   %ebp
+
+  pushl _PROMPT_TEXT(%ebp)     # Get the quote prompt string size
+  call  str_len
+  addl  $4,   %esp
+
+  pushl   %eax                  # Buffer Size
+  pushl   _PROMPT_TEXT(%ebp)
+  call    writeln
+  addl    $8,   %esp
+
+  pushl   $150                  # Get user quote
+  pushl   _PROMPT_BUFFER(%ebp)
+  call    readln
+  addl    $8,   %esp  
+
+  movl  %ebp,   %esp
+  popl  %ebp
+  ret
