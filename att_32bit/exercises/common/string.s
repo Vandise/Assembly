@@ -46,35 +46,27 @@ str_concat:
 #   Param 1 - String
 .type str_len, @function
 
-.equ  _STRING, 8
+.equ  _STRING, 12
 
 str_len:
 
-  pushl  %ebp
-  movl   %esp,  %ebp
+  pushl %ebp
+  movl  %esp, %ebp
 
-  movl  $0,             %ecx
-  movl  _STRING(%ebp),  %edx
+  pushl %edi
+  subl  %ecx, %ecx
+  movl  _STRING(%esp), %edi
 
-count_chars:
+  not   %ecx
+  sub   %al,  %al
+  cld
+  repne   scasb
+  not   %ecx
+  popl  %edi
+  leal  -1(%ecx), %eax
 
-  movb  (%edx), %al
-  cmpb  $0,     %al
-  je    count_chars_end
-
-  incl  %ecx
-  incl  %edx
-  jmp   count_chars
-
-count_chars_end:
-
-  movl  %ecx,   %eax
   popl  %ebp
   ret
-
-# Reverses a string
-#   Param 1 - String / Buffer
-#   Param 2 - Buffer Length
 
 .type str_reverse, @function
 

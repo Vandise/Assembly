@@ -11,11 +11,17 @@ quote_prompt:
 author_prompt:
   .ascii "Who said it? \0"
 
-input_buffer:
+quote_buffer:
   .space 150
+
+author_buffer:
+  .space 50
 
 output_buffer:
   .space 250
+
+fragment_1:
+  .ascii " says \0"
 
 .section    .text
 
@@ -29,34 +35,65 @@ _start:
   subl  $4,     %esp
 
   pushl $quote_prompt
-  pushl $input_buffer
+  pushl $quote_buffer
   call user_prompt
 
-  #subl    $1,     %eax                # Exclude the null value in count
+  addl  $8,   %esp
+
+  subl    $1,     %eax                 # Exclude the null value in count
   movl    %eax,   _CHAR_COUNT(%ebp)    # Input character length
 
-  movl    $input_buffer,      %eax     # Replace the new-line char with a null char
+  movl    $quote_buffer,      %eax     # Replace the new-line char with a null char
   movl    _CHAR_COUNT(%ebp),  %edi
-  movb    $0,                 %cl
-  movb    %cl,                (%eax,%edi,1)
-
-
-  # TODO: merge the input and output buffers
-
-
-  movb    $0, %al                      # Empty the buffer
-  xorb    %al, input_buffer
-  leal    input_buffer, %edi
-  movl    $150, %ecx
-  cld
-  rep stosb
+  movb    $0,                (%eax,%edi,)
 
   pushl $author_prompt
-  pushl $input_buffer
+  pushl $author_buffer
   call user_prompt
 
-  # TODO: Finish building the quote string
+  addl  $8,   %esp
 
+  subl    $1,     %eax 
+  movl  %eax,   _CHAR_COUNT(%ebp)
+
+  movl    $author_buffer,     %eax
+  movl    _CHAR_COUNT(%ebp),  %edi
+  movb    $0,                (%eax,%edi,1)
+
+  pushl $output_buffer                # Start building the string <person> says
+  pushl $fragment_1
+  pushl $author_buffer
+  call  str_concat
+  addl  $12,   %esp
+
+  pushl $output_buffer                # Get the buffer size
+  call  str_len
+  addl  $4,   %esp
+
+  movl  %eax,           %edi          # Push a quotation mark to the buffer
+  movl  $output_buffer, %eax
+  movb  $34,            (%eax,%edi,)  # 34 = ascii "
+  addl  $1, %edi
+
+  pushl $output_buffer                # <person> says "<quote>
+  pushl $quote_buffer
+  pushl $output_buffer
+  call  str_concat
+  addl  $12,   %esp    
+
+  pushl $output_buffer                # TODO: make str_concat return buffer size!
+  call  str_len
+
+  movl  %eax,           %edi          # <person> says "<quote>"
+  movl  $output_buffer, %eax
+  movb  $34,            (%eax,%edi,)
+  addl  $1, %edi
+
+  pushl %edi                          # Print out the quote
+  pushl $output_buffer
+  call  writeln
+
+  addl  $8,   %esp
 
   movl $SYS_EXIT,  %eax         # Exit
   movl $0,         %ebx
