@@ -19,6 +19,10 @@ OBJEXT      := o
 
 current_dir = $(shell pwd)
 
+#---------------------------------------------------------------------------------
+# EDIT ARCHITECTURE AND FLAGS HERE
+#---------------------------------------------------------------------------------
+
 #Flags, Libraries and Includes
 ASM_FLAGS      := -f macho64 -g
 LINK_FLAGS     := -macosx_version_min 10.7.0 -lSystem
@@ -74,6 +78,7 @@ $(BUILDDIR)/%.$(OBJEXT): $(SRCDIR)/%.$(SRCEXT)
 	sed -e 's|.*:|$(BUILDDIR)/$*.$(OBJEXT):|' < $(BUILDDIR)/$*.$(DEPEXT).tmp > $(BUILDDIR)/$*.$(DEPEXT)
 	sed -e 's/.*://' -e 's/\\$$//' < $(BUILDDIR)/$*.$(DEPEXT).tmp | fmt -1 | sed -e 's/^ *//' -e 's/$$/:/' >> $(BUILDDIR)/$*.$(DEPEXT)
 	rm -f $(BUILDDIR)/$*.$(DEPEXT).tmp
+	rm -f $(SRCDIR)/*.o
 
 #Non-File Targets
 .PHONY: all remake clean cleaner
