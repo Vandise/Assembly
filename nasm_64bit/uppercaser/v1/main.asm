@@ -1,4 +1,4 @@
-default rel                       ; Set 64bit RIP-relative addressing
+default rel                       ; Set 6bit RIP-relative addressing
 
 section   .bss
   buffer  resb  1
